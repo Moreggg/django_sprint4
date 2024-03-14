@@ -1,4 +1,3 @@
-from django.db.models.base import Model as Model
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
