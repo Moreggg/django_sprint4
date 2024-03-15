@@ -7,13 +7,20 @@ from . import const
 User = get_user_model()
 
 
-class IsPublishedCreateAtModel(models.Model):
+class CreatedAtModel(models.Model):
+    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
+
+    class Meta:
+        abstract = True
+        ordering = ('created_at',)
+
+
+class IsPublishedCreateAtModel(CreatedAtModel):
     is_published = models.BooleanField(
         'Опубликовано',
         default=True,
         help_text='Снимите галочку, чтобы скрыть публикацию.'
     )
-    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
 
     class Meta:
         abstract = True
@@ -22,7 +29,7 @@ class IsPublishedCreateAtModel(models.Model):
 class Location(IsPublishedCreateAtModel):
     name = models.CharField('Название места', max_length=const.MAX_LENGTH)
 
-    class Meta:
+    class Meta(CreatedAtModel.Meta):
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
 
@@ -41,7 +48,7 @@ class Category(IsPublishedCreateAtModel):
                    'дефис и подчёркивание.')
     )
 
-    class Meta:
+    class Meta(CreatedAtModel.Meta):
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
@@ -88,27 +95,32 @@ class Post(IsPublishedCreateAtModel):
 
     def get_absolute_url(self):
         return reverse(
-            "blog:profile",
+            'blog:profile',
             kwargs={"username": self.author.username}
         )
 
 
-class Comment(models.Model):
+class Comment(CreatedAtModel):
     text = models.TextField('Текст комментария')
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments',
+        verbose_name='Публикация'
     )
-    created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='author'
+        related_name='comments',
+        verbose_name='Автор комментария'
     )
 
-    class Meta:
-        ordering = ('created_at',)
+    class Meta(CreatedAtModel.Meta):
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def get_absolute_url(self):
-        return reverse("blog:post_detail", kwargs={"post_id": self.post_id})
+        return reverse('blog:post_detail', kwargs={'post_id': self.post_id})
+
+    def __str__(self):
+        return self.text[:const.OBJ_STR_SLICE]
