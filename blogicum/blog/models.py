@@ -96,7 +96,7 @@ class Post(IsPublishedCreateAtModel):
     def get_absolute_url(self):
         return reverse(
             'blog:profile',
-            kwargs={"username": self.author.username}
+            kwargs={'username': self.author.username}
         )
 
 

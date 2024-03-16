@@ -14,7 +14,7 @@ from .forms import CommentForm, PostForm
 from .mixins import CommentMixin, OnlyAuthorMixin
 
 
-def select_post(postmanager):
+def annotate_post(postmanager):
     return postmanager.select_related(
         'author',
         'location',
@@ -34,7 +34,7 @@ def filter_post(queryset):
 
 def profile(request, username):
     author = get_object_or_404(get_user_model(), username=username)
-    posts = select_post(Post.objects).filter(author__exact=author.id)
+    posts = annotate_post(author.posts)
     if request.user != author:
         posts = filter_post(posts)
     page_obj = service.paginate(request, posts)
@@ -51,7 +51,7 @@ def category_posts(request, category_slug):
         slug=category_slug,
         is_published=True
     )
-    posts = filter_post(select_post(category.posts))
+    posts = filter_post(annotate_post(category.posts))
     page_obj = service.paginate(request, posts)
     return render(
         request,
@@ -110,7 +110,7 @@ class EditPostView(OnlyAuthorMixin, UpdateView):
 
     def handle_no_permission(self):
         return redirect(reverse(
-            'blog:post_detail', kwargs={"post_id": self.kwargs.get('post_id')})
+            'blog:post_detail', kwargs={'post_id': self.kwargs.get('post_id')})
         )
 
     def get_success_url(self):
@@ -140,12 +140,12 @@ class EditProfileView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        return reverse("blog:profile",
+        return reverse('blog:profile',
                        kwargs={"username": self.object.username})
 
 
 class IndexView(ListView):
     template_name = 'blog/index.html'
     model = Post
-    queryset = filter_post(select_post(Post.objects))
+    queryset = filter_post(annotate_post(Post.objects))
     paginate_by = const.POSTS_ON_PAGE

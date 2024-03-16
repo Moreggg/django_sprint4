@@ -19,5 +19,5 @@ class CommentMixin(LoginRequiredMixin):
 
     def get_success_url(self):
         return reverse_lazy(
-            'blog:post_detail', kwargs={"post_id": self.object.post_id}
+            'blog:post_detail', kwargs={'post_id': self.object.post_id}
         )

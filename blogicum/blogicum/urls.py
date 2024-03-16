@@ -4,16 +4,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
-from . import views
-
 urlpatterns = [
     path('admin/',
          admin.site.urls),
     path('pages/',
          include('pages.urls')),
     path('auth/registration/',
-         views.CreateUser.as_view(),
-         name='registration'),
+         include('accounts.urls')),
     path('auth/',
          include('django.contrib.auth.urls')),
     path('',
